@@ -1,0 +1,25 @@
+{
+  "name": "karaoke-2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "pre-build": "mkdir -p dist && cp -r node_modules/idb/build/cjs dist/idb",
+    "watch": "npm run pre-build && webpack --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "idb": "^4.0.4",
+    "react": "^16.10.2",
+    "react-dom": "^16.10.2",
+    "typescript": "^3.6.3"
+  },
+  "devDependencies": {
+    "@types/react": "^16.9.5",
+    "@types/react-dom": "^16.9.1",
+    "ts-loader": "^6.2.0",
+    "webpack": "^4.41.0",
+    "webpack-cli": "^3.3.9"
+  }
+}
