@@ -89,7 +89,7 @@ const EditorView: React.FC<Props> = props => {
     return <div>
         <Timeline time={time} onChange={setTime} length={(audio && audio.duration) || endTime(song) || 0} />
         <Renderer song={song} time={time} />
-        <Editor text={project.text} onChange={text => saveProject({ ...project, text })} />
+        <Editor text={project.text} time={time} onChange={text => saveProject({ ...project, text })} />
         <div>Time: {time}</div>
         <div>
             {playing ?
