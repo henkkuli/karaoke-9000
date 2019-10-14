@@ -1,6 +1,6 @@
 import * as idb from 'idb';
 
-import EventBoard from './EventBoard';
+import EventEmitter from './EventEmitter';
 import Project from './Project';
 
 interface DbSchema extends idb.DBSchema {
@@ -12,18 +12,18 @@ interface DbSchema extends idb.DBSchema {
 
 export default class DataStorage {
     private versionCounter = 0;
+    public readonly change = new EventEmitter('DataStorage.change');
     private constructor(
-        private db: idb.IDBPDatabase<DbSchema>,
-        private events: EventBoard
+        private db: idb.IDBPDatabase<DbSchema>
     ) {
     }
 
-    public static async create(events: EventBoard) {
+    public static async create() {
         const storage = new DataStorage(await idb.openDB('db', 1, {
             upgrade(db) {
                 db.createObjectStore('projects');
             }
-        }), events);
+        }));
         return storage;
     }
 
@@ -33,7 +33,7 @@ export default class DataStorage {
 
     public async saveProject(project: Project) {
         await this.db.put("projects", project, project.name);
-        this.events.storageChange.emit();
+        this.change.emit();
         this.versionCounter++;
     }
 

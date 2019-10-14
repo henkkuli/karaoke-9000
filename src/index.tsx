@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import ReactDom from 'react-dom';
 
 import EditorView from './EditorView';
-import EventBoard from './EventBoard';
 import DataStorage from './DataStorage';
 import ProjectList from './ProjectList';
 import Project from './Project';
@@ -33,10 +32,9 @@ function clearBody() {
 // }
 
 const App: React.FC = () => {
-    const [events, setEvents] = useState(new EventBoard());
     const [storage, setStorage] = useState<DataStorage>();
     useEffect(() => {
-        DataStorage.create(events).then(setStorage);
+        DataStorage.create().then(setStorage);
     });
 
     const [currentProject, setCurrentProject] = useState<Project>();
@@ -48,7 +46,6 @@ const App: React.FC = () => {
     if (!currentProject) {
         return <ProjectList
             storage={storage}
-            events={events}
             onSelectProject={setCurrentProject}>
         </ProjectList>;
     }

@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 
-import EventBoard from './EventBoard';
-import Project from './Project';
-
 interface Props {
     text: string;
     onChange: (value: string) => void;

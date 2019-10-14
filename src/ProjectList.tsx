@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DataStorage from './DataStorage';
 import Project from './Project';
-import EventBoard from './EventBoard';
 import t from './translations';
 
 interface Props {
     storage: DataStorage;
-    events: EventBoard;
     onSelectProject: (project: Project) => void;
 }
 const ProjectList: React.FC<Props> = props => {
@@ -16,7 +14,7 @@ const ProjectList: React.FC<Props> = props => {
     }
     useEffect(() => {
         getProjects();
-        return props.events.storageChange.on(getProjects);
+        return props.storage.change.on(getProjects);
     });
 
     return projects ?

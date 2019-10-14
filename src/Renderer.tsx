@@ -54,7 +54,7 @@ const Renderer: React.FC<Props> = props => {
             ctx.beginPath();
             ctx.rect(100, 0, interpolation, canvas.height);
             ctx.clip();
-            ctx.fillStyle = line.settings.color1 || 'black';
+            ctx.fillStyle = line.settings.color2 || 'black';
             ctx.fillText(text, 100, canvas.height - (maxRows - line.row + 0.5) * fontSize);
             ctx.restore();
 
@@ -63,7 +63,7 @@ const Renderer: React.FC<Props> = props => {
             ctx.beginPath();
             ctx.rect(100 + interpolation, 0, canvas.width, canvas.height);
             ctx.clip();
-            ctx.fillStyle = line.settings.color2 || 'magenta';
+            ctx.fillStyle = line.settings.color1 || 'magenta';
             ctx.fillText(text, 100, canvas.height - (maxRows - line.row + 0.5) * fontSize);
             ctx.restore();
         }
