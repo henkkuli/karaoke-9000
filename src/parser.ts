@@ -15,6 +15,7 @@ export interface Line {
 }
 export type Song = Line[];
 interface Settings {
+    autostart?: number;
     resolution?: [number, number];
     fontfamily?: string;
     fontsize?: number;
@@ -42,6 +43,8 @@ interface Settings {
 
 function normalizeSetting(name: string, value: string): [keyof Settings, [number, number] | string | number] | undefined {
     switch (name) {
+        case 'autostart':
+            return ['autostart', parseInt(value)];
         case 'res':
         case 'resolution':
             return ['resolution', value.split('x', 2).map(v => parseInt(v)) as [number, number]];
@@ -94,20 +97,44 @@ function tokenize(text: string) {
     return text.split('\n').map(tokenizeLine);
 }
 
-function parse(text: string) {
+export function parse(text: string) {
     const tokenLines = tokenize(text); // .map(line => parseLine(line))
     let baseTime = 0;
     let offsetTime = 0;
-    let startTime = 0;
+    let tokenStartTime = 0;
     let result: UnscheduledLine[] = [];
     let settings: Partial<Settings> = {};
     for (let tokenLine of tokenLines) {
         let row: number | null = null;
         let hangingTokens: string[] = [];
         const line: Part[] = [];
+        let firstToken = true;
         for (let token of tokenLine) {
             if (typeof token === 'string') {
+                if (line.length === 0 && hangingTokens.length === 0 && settings.autostart && settings.autostart <= result.length) {
+                    const start = endTime(result[result.length - settings.autostart]);
+                    if (start !== null) {
+                        line.push({
+                            start: start,
+                            end: tokenStartTime,
+                            text: '',
+                        });
+                    } else {
+                        for (let backline = settings.autostart - 1; backline > 0; backline--) {
+                            const start = startTime(result[result.length - backline]);
+                            if (start !== null) {
+                                line.push({
+                                    start: start,
+                                    end: tokenStartTime,
+                                    text: '',
+                                });
+                                break;
+                            }
+                        }
+                    }
+                }
                 hangingTokens.push(token);
+                firstToken = false;
             } else if ('type' in token) {
                 if (token.type === '') {
                     offsetTime = token.time;
@@ -120,18 +147,26 @@ function parse(text: string) {
                     throw new Error(`Unknown time type ${token.type}`);
                 }
                 // No backward going
-                if ((line.length > 0 || hangingTokens.length > 0) && baseTime + offsetTime < startTime) {
-                    offsetTime = startTime - baseTime;
+                if (baseTime + offsetTime < tokenStartTime) {
+                    if (line.length > 0 || hangingTokens.length > 0) {
+                        offsetTime = tokenStartTime - baseTime;
+                    } else {
+                        tokenStartTime = baseTime + offsetTime;
+                    }
+                }
+                if (hangingTokens.length === 0 && !firstToken) {
+                    hangingTokens.push('');
                 }
                 for (let token of hangingTokens) {
                     line.push({
-                        start: startTime,
+                        start: tokenStartTime,
                         end: baseTime + offsetTime,
                         text: token,
                     });
                 }
                 hangingTokens = [];
-                startTime = baseTime + offsetTime;
+                tokenStartTime = baseTime + offsetTime;
+                firstToken = false;
             } else if ('settings' in token) {
                 settings = { ...settings };
                 for (let setting of token.settings) {
@@ -142,11 +177,12 @@ function parse(text: string) {
                 }
             } else {
                 row = token.row;
+                firstToken = false;
             }
         }
         for (let token of hangingTokens) {
             line.push({
-                start: startTime,
+                start: tokenStartTime,
                 end: baseTime + offsetTime,
                 text: token,
             });

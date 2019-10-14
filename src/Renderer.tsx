@@ -47,7 +47,7 @@ const Renderer: React.FC<Props> = props => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let line of lines) {
             const fontSize = line.settings.fontsize || DEFAULT_FONT_SIZE;
-            ctx.font = `${fontSize}px ${line.settings.fontfamily || ''}`;
+            ctx.font = `${fontSize}px ${line.settings.fontfamily || 'sans-serif'}`;
             const text = line.parts.map(part => part.text).join('');
             const interpolation = interpolationPosition(line, props.time, ctx);
             ctx.save();
