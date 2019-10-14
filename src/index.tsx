@@ -35,7 +35,7 @@ const App: React.FC = () => {
     const [storage, setStorage] = useState<DataStorage>();
     useEffect(() => {
         DataStorage.create().then(setStorage);
-    });
+    }, []);
 
     const [currentProject, setCurrentProject] = useState<Project>();
 

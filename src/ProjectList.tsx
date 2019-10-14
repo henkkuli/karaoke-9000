@@ -21,12 +21,18 @@ const ProjectList: React.FC<Props> = props => {
         <div>
             <ul>
                 {projects.map(project =>
-                    <li onClick={() => props.onSelectProject(project)}>
-                        {project.name}
+                    <li>
+                        <span onClick={() => props.onSelectProject(project)}>
+                            {project.name}
+                        </span>
+                        &nbsp;
+                        <span onClick={() => props.storage.deleteProject(project.name)}>
+                            &times;
+                        </span>
                     </li>)}
             </ul>
             <CreateNewProject storage={props.storage} />
-        </div> :
+        </div > :
         <span>{t().loadingProjectList}</span>;
 };
 
@@ -36,16 +42,19 @@ interface CreateNewProjectProps {
 const CreateNewProject: React.FC<CreateNewProjectProps> = props => {
     const [name, setName] = useState('');
     const [saving, setSaving] = useState(false);
+    const [file, setFile] = useState<File | null>(null);
 
     async function createProject() {
         setSaving(true);
-        await props.storage.saveProject({ name, text: '' });
+        await props.storage.createProject(name, file!);
+        // await props.storage.saveProject({ name, text: '' });
         setSaving(false);
     }
 
     return <div>
+        <input type="file" onChange={e => setFile(e.target.files && e.target.files[0])} />
         <input value={name} onChange={e => setName(e.target.value)} />
-        <button onClick={createProject} disabled={name === '' || saving} >
+        <button onClick={createProject} disabled={name === '' || file === null || saving} >
             {t().createProject}
         </button>
     </div>;
