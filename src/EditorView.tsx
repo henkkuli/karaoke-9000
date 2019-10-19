@@ -6,24 +6,7 @@ import Timeline from './Timeline';
 import Renderer from './Renderer';
 import Project from './Project';
 import parse, { endTime } from './parser';
-
-// export default class EditorView {
-//     public readonly element: HTMLDivElement;
-//     private readonly editor: Editor;
-//     private readonly timeline: Timeline;
-
-//     public constructor(
-//         private storage: DataStorage,
-//         private events: EventBoard,
-//     ) {
-//         this.element = document.createElement('div');
-//         this.editor = new Editor(events);
-//         this.timeline = new Timeline(events);
-
-//         this.element.appendChild(this.timeline.element);
-//         this.element.appendChild(this.editor.element);
-//     }
-// }
+import RecordingView from './RecordingView';
 
 interface Props {
     project: Project;
@@ -35,6 +18,7 @@ const EditorView: React.FC<Props> = props => {
     const [context, setContext] = useState<AudioContext | null>(null);
     const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
     const [playing, setPlaying] = useState(false);
+    const [recording, setRecording] = useState(false);
 
     useEffect(() => {
         setContext(new AudioContext());
@@ -50,9 +34,6 @@ const EditorView: React.FC<Props> = props => {
             const mediaSource = context.createMediaElementSource(audio);
             mediaSource.connect(context.destination);
 
-            // audio.addEventListener('timeupdate', () => {
-            //     setTimeValue(audio.currentTime);
-            // });
             audio.addEventListener('ended', () => {
                 pausePlayback();
             })
@@ -70,12 +51,24 @@ const EditorView: React.FC<Props> = props => {
     }
 
     function startPlayback() {
+        if (recording) return;
         if (audio) audio.play();
         setPlaying(true);
     }
+
     function pausePlayback() {
+        if (recording) return;
         if (audio) audio.pause();
         setPlaying(false);
+    }
+
+    function record() {
+        pausePlayback();
+        setRecording(true);
+    }
+
+    function recordingDone() {
+        setRecording(false);
     }
 
     useAnimationFrame(delta => {
@@ -86,20 +79,25 @@ const EditorView: React.FC<Props> = props => {
 
     const song = parse(project.text);
 
-    return <div>
-        <Timeline time={time} onChange={setTime} length={(audio && audio.duration) || endTime(song) || 0} />
-        <Renderer song={song} time={time} />
-        <Editor text={project.text} time={time} onChange={text => saveProject({ ...project, text })} />
-        <div>Time: {time}</div>
-        <div>
-            {playing ?
-                <span onClick={pausePlayback}>⏸</span> :
-                <span onClick={startPlayback}>▶</span>}
-        </div>
-        {/* <pre>
+    if (recording) {
+        return <RecordingView project={props.project} length={endTime(song) || 0} onDone={recordingDone} />
+    } else {
+        return <div>
+            <Timeline time={time} onChange={setTime} length={(audio && audio.duration) || endTime(song) || 0} />
+            <Renderer song={song} time={time} />
+            <Editor text={project.text} time={time} onChange={text => saveProject({ ...project, text })} />
+            <div>Time: {time}</div>
+            <div>
+                {playing ?
+                    <span onClick={pausePlayback}>⏸</span> :
+                    <span onClick={startPlayback}>▶</span>}
+                <span onClick={record}>■</span>
+            </div>
+            {/* <pre>
             {JSON.stringify(song, undefined, 4)}
         </pre> */}
-    </div>;
+        </div>;
+    }
 }
 
 const useAnimationFrame = (callback: (delta: number) => void) => {
