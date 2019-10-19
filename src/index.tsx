@@ -6,7 +6,7 @@ import DataStorage from './DataStorage';
 import ProjectList from './ProjectList';
 import Project from './Project';
 import t from './translations';
-import Editor from './Editor';
+import './main.css';
 
 function clearBody() {
     while (document.body.lastChild) {

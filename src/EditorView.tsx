@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import PlayArrow from '@material-ui/icons/PlayArrow';
+import Stop from '@material-ui/icons/Stop';
+import FiberManualRecord from '@material-ui/icons/FiberManualRecord';
 
 import DataStorage from './DataStorage';
 import Editor from './Editor';
@@ -82,23 +86,68 @@ const EditorView: React.FC<Props> = props => {
     if (recording) {
         return <RecordingView project={props.project} length={endTime(song) || 0} onDone={recordingDone} />
     } else {
-        return <div>
-            <Timeline time={time} onChange={setTime} length={(audio && audio.duration) || endTime(song) || 0} />
-            <Renderer song={song} time={time} />
-            <Editor text={project.text} time={time} onChange={text => saveProject({ ...project, text })} />
-            <div>Time: {time}</div>
+        return <VerticalSplit>
             <div>
-                {playing ?
-                    <span onClick={pausePlayback}>⏸</span> :
-                    <span onClick={startPlayback}>▶</span>}
-                <span onClick={record}>■</span>
+                <HorizontalSplit>
+                    <div>
+                        <Editor text={project.text} time={time} onChange={text => saveProject({ ...project, text })} />
+                    </div>
+                    <div>
+                        <Renderer song={song} time={time} />
+                    </div>
+                </HorizontalSplit>
+            </div>
+            <div>
+                <Timeline time={time} onChange={setTime} length={(audio && audio.duration) || endTime(song) || 0} />
+                <div>Time: {time}</div>
+                <div>
+                    {playing ?
+                        <span onClick={pausePlayback}><Stop /></span> :
+                        <span onClick={startPlayback}><PlayArrow /></span>}
+                    <span onClick={record}><FiberManualRecord /></span>
+                </div>
             </div>
             {/* <pre>
             {JSON.stringify(song, undefined, 4)}
         </pre> */}
-        </div>;
+        </VerticalSplit>;
     }
 }
+
+const VerticalSplit = styled.div`
+    & > div:first-child {
+                position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 100px;
+        }
+    & > div:last-child {
+                position: absolute;
+            height: 100px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+    `;
+
+
+const HorizontalSplit = styled.div`
+    & > div:first-child {
+                position: absolute;
+            top: 0;
+            left: 0;
+            right: 50%;
+            bottom: 0;
+        }
+    & > div:last-child {
+                position: absolute;
+            top: 0;
+            left: 50%;
+            right: 0;
+            bottom: 0;
+        }
+    `;
 
 const useAnimationFrame = (callback: (delta: number) => void) => {
     const requestRef = React.useRef<number>(0);

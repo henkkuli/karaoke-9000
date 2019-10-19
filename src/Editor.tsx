@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import styled from 'styled-components';
 
 interface Props {
     text: string;
@@ -15,8 +16,13 @@ const Editor: React.FC<Props> = props => {
         }
     }
 
-    return <textarea value={props.text} onChange={e => props.onChange(e.target.value)} onClick={handleClick} ref={textareaRef}>
-    </textarea>
+    return <StyledTextarea value={props.text} onChange={e => props.onChange(e.target.value)} onClick={handleClick} ref={textareaRef} />;
 }
+
+const StyledTextarea = styled.textarea`
+    width: 100%;
+    height: 100%;
+    resize: none;
+`;
 
 export default Editor;
