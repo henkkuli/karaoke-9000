@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "pre-build": "mkdir -p dist && cp -r node_modules/idb/build/cjs dist/idb",
-    "watch": "npm run pre-build && webpack --watch"
+    "watch": "webpack --watch",
+    "build-prod": "webpack -p"
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +19,7 @@
   "devDependencies": {
     "@types/react": "^16.9.5",
     "@types/react-dom": "^16.9.1",
+    "html-webpack-plugin": "^3.2.0",
     "ts-loader": "^6.2.0",
     "webpack": "^4.41.0",
     "webpack-cli": "^3.3.9"
