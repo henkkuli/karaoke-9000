@@ -72,21 +72,24 @@ const Renderer: React.FC<Props> = props => {
                 ctx.font = `${fontSize}px ${line.settings.fontfamily || 'sans-serif'}`;
                 const text = line.parts.map(part => part.text).join('');
                 const interpolation = interpolationPosition(line, props.time, ctx);
+                const lineWidth = totalWidth(text, ctx);
+                const xpos = (width - lineWidth) / 2;
+
                 ctx.save();
                 ctx.beginPath();
-                ctx.rect(100, 0, interpolation, canvas.height);
+                ctx.rect(xpos, 0, interpolation, canvas.height);
                 ctx.clip();
                 ctx.fillStyle = line.settings.color2 || 'black';
-                ctx.fillText(text, 100, canvas.height - (maxRows - line.row + 0.5) * fontSize);
+                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
                 ctx.restore();
 
 
                 ctx.save();
                 ctx.beginPath();
-                ctx.rect(100 + interpolation, 0, canvas.width, canvas.height);
+                ctx.rect(xpos + interpolation, 0, canvas.width, canvas.height);
                 ctx.clip();
                 ctx.fillStyle = line.settings.color1 || 'magenta';
-                ctx.fillText(text, 100, canvas.height - (maxRows - line.row + 0.5) * fontSize);
+                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
                 ctx.restore();
             }
 
