@@ -21,27 +21,16 @@ interface Settings {
     fontsize?: number;
     color1?: string;
     color2?: string;
+    alias: { [alias: string]: string; }
 }
 
-// class Parser {
-//     private pos = 0;
-//     public constructor(private text:string){}
+type Values<T> = T[keyof T];
+type NormalizedSettings = Values<{ [key in keyof Settings]: [key, Settings[key]] }>;
 
-//     private consume():string|number {
-
-//     }
-// }
-
-// class Tokenizer {
-//     private pos = 0;
-//     public constructor(private text:string){}
-
-//     private consume():string|number {
-
-//     }
-// }
-
-function normalizeSetting(name: string, value: string): [keyof Settings, [number, number] | string | number] | undefined {
+function normalizeSetting(name: string, value: string, settings: Partial<Settings>): NormalizedSettings {
+    if (name.startsWith('alias-')) {
+        return ['alias', { [name.substr(6)]: value }];
+    }
     switch (name) {
         case 'autostart':
             return ['autostart', parseInt(value)];
@@ -98,12 +87,12 @@ function tokenize(text: string) {
 }
 
 export function parse(text: string) {
-    const tokenLines = tokenize(text); // .map(line => parseLine(line))
+    const tokenLines = tokenize(text);
     let baseTime = 0;
     let offsetTime = 0;
     let tokenStartTime = 0;
     let result: UnscheduledLine[] = [];
-    let settings: Partial<Settings> = {};
+    let settings: Partial<Settings> & { alias: Settings['alias'] } = { alias: {} };
     for (let tokenLine of tokenLines) {
         let row: number | null = null;
         let hangingTokens: string[] = [];
@@ -170,10 +159,18 @@ export function parse(text: string) {
             } else if ('settings' in token) {
                 settings = { ...settings };
                 for (let setting of token.settings) {
-                    const normalized = normalizeSetting(setting[0], setting[1]);
+                    const normalized = normalizeSetting(setting[0], setting[1], settings);
                     if (!normalized) continue;
-                    const [key, value] = normalized;
-                    settings[key] = value as any;
+                    if (normalized[0] === 'alias') {
+                        settings.alias = { ...settings.alias, ...normalized[1] };
+                    } else {
+                        const [key, value] = normalized;
+                        if (settings.alias[value as string]) {
+                            settings[key] = settings.alias[value as string] as any;
+                        } else {
+                            settings[key] = value as any;
+                        }
+                    }
                 }
             } else {
                 row = token.row;
@@ -211,7 +208,7 @@ export function endTime(line: Line | UnscheduledLine | Song): number | null {
 
 function schedule(song: UnscheduledLine[]): Line[] {
     const reservedUntil: number[] = [];
-    let settings: Settings = {};
+    let settings: Settings = { alias: {} };
     return song.map(line => {
         const start = startTime(line);
         if (start === null) return null;
