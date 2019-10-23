@@ -129,7 +129,7 @@ const VerticalSplit = styled.div`
             right: 0;
             bottom: 0;
         }
-    `;
+`;
 
 
 const HorizontalSplit = styled.div`
@@ -147,7 +147,7 @@ const HorizontalSplit = styled.div`
             right: 0;
             bottom: 0;
         }
-    `;
+`;
 
 const useAnimationFrame = (callback: (delta: number) => void) => {
     const requestRef = React.useRef<number>(0);

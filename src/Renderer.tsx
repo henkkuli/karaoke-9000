@@ -1,34 +1,13 @@
-import React, { useRef, createContext, useEffect, useState } from 'react';
-import { Song, startTime, endTime, Line } from './parser';
+import React, { useEffect, useState } from 'react';
+import { Song } from './parser';
 import styled from 'styled-components';
-
-const DEFAULT_FONT_SIZE = 30;
+import renderFrame from './renderer';
 
 interface Props {
     song: Song;
     time: number;
     onCanvasRendered?: (canvas: HTMLCanvasElement, time: number) => void;
 }
-
-function totalWidth(text: string, ctx: CanvasRenderingContext2D) {
-    return ctx.measureText(text).width;
-}
-
-function interpolationPosition(line: Line, time: number, ctx: CanvasRenderingContext2D) {
-    let text: string[] = [];
-    for (let part of line.parts) {
-        if (part.end < time) {
-            text.push(part.text);
-        } else {
-            const width1 = totalWidth(text.join(''), ctx);
-            text.push(part.text);
-            const width2 = totalWidth(text.join(''), ctx);
-            return width1 + (width2 - width1) * (time - part.start) / (part.end - part.start);
-        }
-    }
-    return Infinity;
-}
-
 const Renderer: React.FC<Props> = props => {
     const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
     const [container, setContainer] = useState<HTMLDivElement | null>(null);
@@ -59,55 +38,7 @@ const Renderer: React.FC<Props> = props => {
             canvas.style.top = `${(parentHeight - 2 - viewHeight) / 2}px`;
             canvas.style.left = `${(parentWidth - 2 - viewWidth) / 2}px`;
 
-            const maxRows = Math.max(...props.song.map(line => line.row));
-
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                return;
-            }
-            const lines = props.song.filter(line => (startTime(line) || 0) <= props.time && props.time < (endTime(line) || 0));
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let line of lines) {
-                const fontSize = line.settings.fontsize || DEFAULT_FONT_SIZE;
-                ctx.font = `${fontSize}px ${line.settings.fontfamily || 'sans-serif'}`;
-                const text = line.parts.map(part => part.text).join('');
-                const interpolation = interpolationPosition(line, props.time, ctx);
-                const lineWidth = totalWidth(text, ctx);
-                const xpos = (width - lineWidth) / 2;
-
-                ctx.save();
-                ctx.beginPath();
-                ctx.rect(xpos, 0, interpolation, canvas.height);
-                ctx.clip();
-                ctx.fillStyle = '';
-                ctx.shadowColor = '#000000';
-                ctx.shadowBlur = 1;
-                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
-                ctx.shadowColor = '#ffffff';
-                ctx.shadowBlur = 2;
-                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
-                ctx.fillStyle = line.settings.color2 || 'black';
-                ctx.shadowBlur = 0;
-                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
-                ctx.restore();
-
-
-                ctx.save();
-                ctx.beginPath();
-                ctx.rect(xpos + interpolation, 0, canvas.width, canvas.height);
-                ctx.clip();
-                ctx.fillStyle = '';
-                ctx.shadowColor = '#000000';
-                ctx.shadowBlur = 1;
-                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
-                ctx.shadowColor = '#ffffff';
-                ctx.shadowBlur = 2;
-                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
-                ctx.fillStyle = line.settings.color1 || 'magenta';
-                ctx.shadowBlur = 0;
-                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
-                ctx.restore();
-            }
+            renderFrame(props.song, props.time, canvas);
 
             if (props.onCanvasRendered) {
                 props.onCanvasRendered(canvas, props.time);
