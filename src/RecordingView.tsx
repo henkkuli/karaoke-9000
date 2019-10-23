@@ -29,7 +29,6 @@ function renderSong(song: Song, length: number, setTime: (time: number) => void)
         function addFrame(frame: number, time: number, canvas: HTMLCanvasElement) {
             return new Promise<void>((resolve, reject) => {
                 if (time > length) {
-                    window.open(URL.createObjectURL(tar.save()));
                     resolve();
                     return;
                 }
@@ -48,6 +47,7 @@ function renderSong(song: Song, length: number, setTime: (time: number) => void)
 
         function next() {
             if (frame * frameTime > length) {
+                window.open(URL.createObjectURL(tar.save()));
                 resolve();
                 return;
             }
