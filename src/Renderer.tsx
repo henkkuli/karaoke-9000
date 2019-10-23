@@ -79,7 +79,15 @@ const Renderer: React.FC<Props> = props => {
                 ctx.beginPath();
                 ctx.rect(xpos, 0, interpolation, canvas.height);
                 ctx.clip();
+                ctx.fillStyle = '';
+                ctx.shadowColor = '#000000';
+                ctx.shadowBlur = 1;
+                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
+                ctx.shadowColor = '#ffffff';
+                ctx.shadowBlur = 2;
+                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
                 ctx.fillStyle = line.settings.color2 || 'black';
+                ctx.shadowBlur = 0;
                 ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
                 ctx.restore();
 
@@ -88,7 +96,15 @@ const Renderer: React.FC<Props> = props => {
                 ctx.beginPath();
                 ctx.rect(xpos + interpolation, 0, canvas.width, canvas.height);
                 ctx.clip();
+                ctx.fillStyle = '';
+                ctx.shadowColor = '#000000';
+                ctx.shadowBlur = 1;
+                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
+                ctx.shadowColor = '#ffffff';
+                ctx.shadowBlur = 2;
+                ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
                 ctx.fillStyle = line.settings.color1 || 'magenta';
+                ctx.shadowBlur = 0;
                 ctx.fillText(text, xpos, canvas.height - (maxRows - line.row + 0.5) * fontSize);
                 ctx.restore();
             }
